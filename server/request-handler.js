@@ -5,11 +5,11 @@ var url = require('url');
  * from this file and include it in basic-server.js. Check out the
  * node module documentation at http://nodejs.org/api/modules.html. */
 
-var _messages = [{username: "bill",text:"this is dummby data", roomname:"lobby", createdAt: new Date()}];
-var _chatrooms = {};//{lobby: 'lobby'};
+var _chatrooms = {lobby: [{username: "bill", message: "this is dummby data", roomname: "lobby", createdAt: new Date()}]};//{lobby: 'lobby'};
 
 
 var handleRequest = function(request, response) {
+  console.log("Serving request type " + request.method + " for url " + request.url);
   var statusCode = 200;
   var headers =  {
     "access-control-allow-origin": "*",
@@ -21,34 +21,31 @@ var handleRequest = function(request, response) {
   headers['Content-Type'] = "text/plain";
   // response.writeHead(statusCode, headers);
 
-  console.log("Serving request type " + request.method + " for url " + request.url);
-
-  if (request.method === 'GET'){
-    var pathname = url.parse(request.url).pathname;
-    if (pathname === '/classes/messages') {
+  var chatroom = (url.parse(request.url).pathname).split('/')[2];  //this is a hack!! fix me!
+  if (chatroom) {
+    _chatrooms[chatroom] = ( _chatrooms[chatroom] ) ? _chatrooms[chatroom]: [];
+    if (request.method === 'GET'){
       response.writeHead(statusCode, headers);
-       response.end(JSON.stringify({results: _messages}));
-       // response.end();
+      response.end(JSON.stringify( _chatrooms[chatroom]) );
+
+    } else if (request.method === 'POST'){
+      var body = "";
+      request.on('data', function(data){
+        body += data;
+      });
+      request.on('end', function(){
+        var POST = JSON.parse(body);
+        POST.createdAt = new Date();
+        _chatrooms[chatroom].push(POST);
+      });
+      response.writeHead(201, headers);
+      response.end();
+    } else if (request.method === 'OPTIONS') {
+      console.log ('we have none');
     }
-    if (pathname === '/classes/room1') {
-       response.writeHead(statusCode, headers);
-       response.end(JSON.stringify(Object.keys(_chatrooms)));
-       // response.end();
-    }
-  } else if (request.method === 'POST'){
-    var body = "";
-    request.on('data', function(data){
-      body += data;
-    });
-    request.on('end', function(){
-      var POST = JSON.parse(body);
-      POST.createdAt = new Date();
-      _messages.push(POST);
-    });
-    response.writeHead(201, headers);
+  } else {
+    response.writeHead(404, headers);
     response.end();
-  } else if (request.method === 'OPTIONS') {
-    console.log ('we have none');
   }
 
   // response.end();
