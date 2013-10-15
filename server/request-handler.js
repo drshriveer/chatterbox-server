@@ -10,46 +10,56 @@ var _chatrooms = {lobby: [{username: "bill", message: "this is dummby data", roo
 
 var handleRequest = function(request, response) {
   console.log("Serving request type " + request.method + " for url " + request.url);
-  var statusCode = 200;
   var headers =  {
     "access-control-allow-origin": "*",
     "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
     "access-control-allow-headers": "content-type, accept",
-    "access-control-max-age": 10 // Seconds.
+    "access-control-max-age": 10, // Seconds.
+    "content-type": "text/plain"
   };
 
-  headers['Content-Type'] = "text/plain";
-  // response.writeHead(statusCode, headers);
-
   var chatroom = (url.parse(request.url).pathname).split('/')[2];  //this is a hack!! fix me!
+
+  // Switches between request methods
   if (chatroom) {
     _chatrooms[chatroom] = ( _chatrooms[chatroom] ) ? _chatrooms[chatroom]: [];
     if (request.method === 'GET'){
-      response.writeHead(statusCode, headers);
-      response.end(JSON.stringify( _chatrooms[chatroom]) );
-
+      handleGet(request, response, headers, chatroom);
     } else if (request.method === 'POST'){
-      var body = "";
-      request.on('data', function(data){
-        body += data;
-      });
-      request.on('end', function(){
-        var POST = JSON.parse(body);
-        POST.createdAt = new Date();
-        _chatrooms[chatroom].push(POST);
-      });
-      response.writeHead(201, headers);
-      response.end();
-    } else if (request.method === 'OPTIONS') {
-      console.log ('we have none');
+      handlePost(request, response, headers, chatroom);
     }
   } else {
     response.writeHead(404, headers);
     response.end();
   }
-
-  // response.end();
 };
+
+
+//
+//  ---------- GET Request Method Handlers ---------------------
+//
+var handleGet = function(request, response, headers, chatroom) {
+  response.writeHead(200, headers);
+  response.end(JSON.stringify( _chatrooms[chatroom]) );
+};
+
+//
+//  ---------- POST Request Method Handlers ---------------------
+//
+var handlePost = function(request, response, headers, chatroom) {
+  var body = "";
+  request.on('data', function(data){
+    body += data;
+  });
+  request.on('end', function(){
+    var POST = JSON.parse(body);
+    POST.createdAt = new Date();
+    _chatrooms[chatroom].push(POST);
+  });
+  response.writeHead(201, headers);
+  response.end();
+};
+
 
 
 
