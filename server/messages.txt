@@ -1,0 +1,1 @@
+{"message":"qwdqwasd","username":"asfq","roomname":"lobby","createdAt":"2013-10-16T03:01:39.235Z"}{"message":"wqefwef","username":"asfq","roomname":"lobby","createdAt":"2013-10-16T03:03:18.558Z"}{"message":"rthtrtbrtb","username":"asfq","roomname":"lobby","createdAt":"2013-10-16T03:03:24.385Z"}
